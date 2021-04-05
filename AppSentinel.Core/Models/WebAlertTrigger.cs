@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AppSentinel.Models
+namespace AppSentinel.Core.Models
 {
     public class WebAlertTrigger
     {
