@@ -38,6 +38,7 @@ namespace AppSentinel.Core.Managers
             {
                 var msg = MailHelper.CreateSingleEmail(from, target, subject, message, htmlMessage);
                 var response = await client.SendEmailAsync(msg);
+                var responseContent = await response.Body.ReadAsStringAsync();
             }
 
         }

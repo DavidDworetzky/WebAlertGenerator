@@ -62,7 +62,7 @@ namespace AppSentinel.Console
 
             var splitTargets = SendGridTargets.Split(',').ToList();
 
-            var emailNotificationManager = new Core.Managers.EmailNotificationManager(SendGridApiKey, From, FromEmail);
+            var emailNotificationManager = new Core.Managers.EmailNotificationManager(SendGridApiKey, FromEmail, From);
             foreach (var alert in alerts)
             {
                 emailNotificationManager.NotifyMessageToTargets(splitTargets, alert.Description, $"<strong>{alert.Description}</strong>", $"App Sentinel Alert from {From}");
@@ -78,7 +78,7 @@ namespace AppSentinel.Console
             FillValue("SendGridTargets", ref SendGridTargets);
 
             var splitTargets = SendGridTargets.Split(',').ToList();
-            var emailNotificationManager = new Core.Managers.EmailNotificationManager(SendGridApiKey, From, FromEmail);
+            var emailNotificationManager = new Core.Managers.EmailNotificationManager(SendGridApiKey, FromEmail, From);
             emailNotificationManager.NotifyMessageToTargets(splitTargets, "Test Notification", $"<strong>Test Notification</strong>", $"App Sentinel Alert from {From}");
 
         }
