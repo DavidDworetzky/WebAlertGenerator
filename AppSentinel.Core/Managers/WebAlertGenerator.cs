@@ -27,6 +27,8 @@ namespace AppSentinel.Core.Managers
         {
             var alerts = new List<WebAlert>();
             var alertsEnumerator = AlertTriggers.GetEnumerator();
+            //cardinality of alerts should match trigger urls
+            alertsEnumerator.MoveNext();
             foreach (var url in Urls)
             {
                 var currentAlert = alertsEnumerator.Current;

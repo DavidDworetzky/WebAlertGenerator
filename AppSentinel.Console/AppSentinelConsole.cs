@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using AppSentinel.Core.Models;
+using AppSentinel.Core.Managers;
 
 namespace AppSentinel.Console
 {
@@ -28,6 +30,23 @@ namespace AppSentinel.Console
             }
         }
 
+        private static AppSentinelSettings GetSettings()
+        {
+            var settingsDictionary = new Dictionary<string, string>() {
+                { "SendGridKey", SendGridApiKey },
+                { "SendGridFromEmail", FromEmail },
+                { "SendGridFrom", From },
+                { "SendGridTargets", SendGridTargets },
+                { "TriggerUrls", TriggerUrls },
+                { "TriggerValues", TriggerValues }
+            };
+
+            var settingsManager = new WebAlertSettingsManager("");
+
+            var allSettings = settingsManager.LoadSettingsFromDictionary(settingsDictionary);
+            return allSettings;
+        }
+
         public static void TestWebAlertGenerator()
         {
             //Fill Initial Values
@@ -38,34 +57,18 @@ namespace AppSentinel.Console
             FillValue("TriggerUrls", ref TriggerUrls);
             FillValue("TriggerValues", ref TriggerValues);
 
-            var splitUrls = TriggerUrls.Split(',');
-            var splitTriggers = TriggerValues.Split(';');
-
-
-            var webAlerts = splitTriggers.Select((val) =>
-            {
-                var splitValues = val.Split(',');
-                var statusRange1 = Int32.Parse(splitValues[0]);
-                var statusRange2 = Int32.Parse(splitValues[1]);
-                var statusRange = new List<int>() { statusRange1, statusRange2 };
-                var checkSuccessful = bool.Parse(splitValues[2]);
-                var regex = splitValues[3];
-                Core.Models.WebAlertType webAlertType;
-                var webAlertTypeParse = Enum.TryParse<Core.Models.WebAlertType>(splitValues[4], out webAlertType);
-                var webAlert = new Core.Models.WebAlertTrigger(statusRange, checkSuccessful, regex, webAlertType);
-                return webAlert;
-            }).ToList();
+            var allSettings = GetSettings();
 
             //generate alerts
-            var webAlertGenerator = new Core.Managers.WebAlertGenerator(splitUrls.ToList(), webAlerts);
+            var webAlertGenerator = new Core.Managers.WebAlertGenerator(allSettings.WebAlertSettings.Urls.ToList(), allSettings.WebAlertSettings.Triggers.ToList());
             var alerts = webAlertGenerator.GenerateAlerts() as IEnumerable<Core.Models.WebAlert>;
 
-            var splitTargets = SendGridTargets.Split(',').ToList();
+            var notificationSettings = allSettings.NotificationSettings;
 
-            var emailNotificationManager = new Core.Managers.EmailNotificationManager(SendGridApiKey, FromEmail, From);
+            var emailNotificationManager = new Core.Managers.EmailNotificationManager(notificationSettings.SendGridApiKey, notificationSettings.FromEmail, notificationSettings.From);
             foreach (var alert in alerts)
             {
-                emailNotificationManager.NotifyMessageToTargets(splitTargets, alert.Description, $"<strong>{alert.Description}</strong>", $"App Sentinel Alert from {From}");
+                emailNotificationManager.NotifyMessageToTargets(allSettings.NotificationSettings.SendGridTargets.ToList(), alert.Description, $"<strong>{alert.Description}</strong>", $"App Sentinel Alert from {notificationSettings.From}");
             }
         }
 
