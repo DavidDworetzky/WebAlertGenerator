@@ -10,10 +10,10 @@ namespace AppSentinel.Core.Models
     /// </summary>
     public class NotificationSettings
     {
-        public readonly string SendGridApiKey;
-        public readonly string FromEmail;
-        public readonly string From;
-        public readonly IEnumerable<string> SendGridTargets;
+        public string SendGridApiKey { get; set; }
+        public string FromEmail { get; set; }
+        public string From { get; set; }
+        public IEnumerable<string> SendGridTargets { get; set; }
 
         /// <summary>
         /// Pre-split constructor
@@ -44,6 +44,14 @@ namespace AppSentinel.Core.Models
             FromEmail = fromEmail;
             From = from;
             SendGridTargets = sendGridTargets.Split(separator).ToList();
+        }
+
+        /// <summary>
+        /// Default constructor for Newtonsoft and Reflection
+        /// </summary>
+        public NotificationSettings()
+        {
+
         }
     }
 }

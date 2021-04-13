@@ -6,13 +6,18 @@ namespace AppSentinel.Core.Models
     /// </summary>
     public class AppSentinelSettings
     {
-        public readonly NotificationSettings NotificationSettings;
-        public readonly WebAlertSettings WebAlertSettings;
+        public NotificationSettings NotificationSettings { get; set; }
+        public WebAlertSettings WebAlertSettings { get; set; }
 
         public AppSentinelSettings(NotificationSettings notificationSettings, WebAlertSettings webAlertSettings)
         {
             NotificationSettings = notificationSettings;
             WebAlertSettings = webAlertSettings;
+        }
+
+        public AppSentinelSettings()
+        {
+
         }
     }
 }

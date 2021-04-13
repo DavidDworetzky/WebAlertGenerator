@@ -32,6 +32,15 @@ namespace AppSentinel.Console
 
         private static AppSentinelSettings GetSettings()
         {
+            var settingsManager = new WebAlertSettingsManager("");
+            var persistedSettings = settingsManager.LoadSettingsFromDisk().Result;
+            if (persistedSettings != null)
+            {
+                return persistedSettings;
+            }
+            //now, fill settings and get settings dictionary values for AppSentinelsettings
+            FillSettings();
+
             var settingsDictionary = new Dictionary<string, string>() {
                 { "SendGridKey", SendGridApiKey },
                 { "SendGridFromEmail", FromEmail },
@@ -40,14 +49,12 @@ namespace AppSentinel.Console
                 { "TriggerUrls", TriggerUrls },
                 { "TriggerValues", TriggerValues }
             };
-
-            var settingsManager = new WebAlertSettingsManager("");
-
             var allSettings = settingsManager.LoadSettingsFromDictionary(settingsDictionary);
+            settingsManager.WriteSettingsToDisk(allSettings).Wait();
             return allSettings;
         }
 
-        public static void TestWebAlertGenerator()
+        private static void FillSettings()
         {
             //Fill Initial Values
             FillValue("SendGridApiKey", ref SendGridApiKey);
@@ -56,7 +63,10 @@ namespace AppSentinel.Console
             FillValue("SendGridTargets", ref SendGridTargets);
             FillValue("TriggerUrls", ref TriggerUrls);
             FillValue("TriggerValues", ref TriggerValues);
+        }
 
+        public static void TestWebAlertGenerator()
+        {
             var allSettings = GetSettings();
 
             //generate alerts

@@ -5,6 +5,7 @@ using AppSentinel.Core.Models;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace AppSentinel.Core.Managers
 {

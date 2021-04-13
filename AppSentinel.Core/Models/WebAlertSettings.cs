@@ -6,8 +6,8 @@ namespace AppSentinel.Core.Models
 {
     public class WebAlertSettings
     {
-        public readonly IEnumerable<string> Urls;
-        public readonly IEnumerable<WebAlertTrigger> Triggers;
+        public IEnumerable<string> Urls { get; set; }
+        public IEnumerable<WebAlertTrigger> Triggers { get; set; }
 
         /// <summary>
         /// Standard Constructor
@@ -43,6 +43,14 @@ namespace AppSentinel.Core.Models
                 var webAlert = new Core.Models.WebAlertTrigger(statusRange, checkSuccessful, regex, webAlertType);
                 return webAlert;
             }).ToList();
+        }
+
+        /// <summary>
+        /// Default constructor for Newtonsoft and Reflection
+        /// </summary>
+        public WebAlertSettings()
+        {
+
         }
     }
 }
