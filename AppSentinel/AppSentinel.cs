@@ -51,7 +51,7 @@ namespace AppSentinel
 
             //generate alerts
             var webAlertGenerator = new Core.Managers.WebAlertGenerator(sentinelSettings.WebAlertSettings.Urls.ToList(), sentinelSettings.WebAlertSettings.Triggers.ToList());
-            var alerts = webAlertGenerator.GenerateAlerts() as IEnumerable<Core.Models.WebAlert>;
+            var alerts = await webAlertGenerator.GenerateAlerts();
 
             var alertSettings = sentinelSettings.WebAlertSettings;
             var notificationSettings = sentinelSettings.NotificationSettings;
