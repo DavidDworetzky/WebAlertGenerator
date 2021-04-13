@@ -24,47 +24,54 @@ namespace AppSentinel.Core.Managers
             }
         }
 
-        public async Task<IList<WebAlert>> GenerateAlerts()
+        public async Task<List<WebAlert>> GenerateAlerts()
         {
             var alerts = new List<WebAlert>();
-            var alertsEnumerator = AlertTriggers.GetEnumerator();
-            //cardinality of alerts should match trigger urls
-            alertsEnumerator.MoveNext();
-            foreach (var url in Urls)
+            try
             {
-                var currentAlert = alertsEnumerator.Current;
-                using (var client = new HttpClient() { BaseAddress = new Uri(url) })
+                var alertsEnumerator = AlertTriggers.GetEnumerator();
+                //cardinality of alerts should match trigger urls
+                alertsEnumerator.MoveNext();
+                foreach (var url in Urls)
                 {
-                    // grab content from url
-                    var result = await client.GetAsync("");
-                    var content = await result.Content.ReadAsStringAsync();
+                    var currentAlert = alertsEnumerator.Current;
+                    using (var client = new HttpClient())
+                    {
+                        // grab content from url
+                        var result = await client.GetAsync(url);
+                        var content = await result.Content.ReadAsStringAsync();
 
-                    // check if boolean condition
-                    if (currentAlert.CheckSuccessful && !result.IsSuccessStatusCode)
-                    {
-                        alerts.Add(new WebAlert($"Alert!!! Failed to get content at : {url}", WebAlertType.HttpFailure));
-                        break;
-                    }
-                    // now, check if range trigger
-                    if (currentAlert.StatusRange.Count > 0)
-                    {
-                        var lower = currentAlert.StatusRange[0];
-                        var upper = currentAlert.StatusRange[1];
-                        if (!((int)result.StatusCode <= upper && (int)result.StatusCode >= lower))
+                        // check if boolean condition
+                        if (currentAlert.CheckSuccessful && !result.IsSuccessStatusCode)
                         {
-                            alerts.Add(new WebAlert($"Alert!!! Status code of response was : {result.StatusCode} which is not between {lower} and {upper}.", WebAlertType.HttpFailure));
+                            alerts.Add(new WebAlert($"Alert!!! Failed to get content at : {url}", WebAlertType.HttpFailure));
+                            break;
+                        }
+                        // now, check if range trigger
+                        if (currentAlert.StatusRange.Count > 0)
+                        {
+                            var lower = currentAlert.StatusRange[0];
+                            var upper = currentAlert.StatusRange[1];
+                            if (!((int)result.StatusCode <= upper && (int)result.StatusCode >= lower))
+                            {
+                                alerts.Add(new WebAlert($"Alert!!! Status code of response was : {result.StatusCode} which is not between {lower} and {upper}.", WebAlertType.HttpFailure));
+                                break;
+                            }
+                        }
+
+                        // finally, check for regex match
+                        if (!string.IsNullOrEmpty(currentAlert.Regex) && Regex.Matches(content, currentAlert.Regex).Count == 0)
+                        {
+                            alerts.Add(new WebAlert($"Alert!!! Could not match pattern {currentAlert.Regex} at Url: {url}.", WebAlertType.ContentFailure));
                             break;
                         }
                     }
-
-                    // finally, check for regex match
-                    if (!string.IsNullOrEmpty(currentAlert.Regex) && Regex.Matches(content, currentAlert.Regex).Count == 0)
-                    {
-                        alerts.Add(new WebAlert($"Alert!!! Could not match pattern {currentAlert.Regex} at Url: {url}.", WebAlertType.ContentFailure));
-                        break;
-                    }
+                    alertsEnumerator.MoveNext();
                 }
-                alertsEnumerator.MoveNext();
+            }
+            catch(System.Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.ToString());
             }
             return alerts;
         }
